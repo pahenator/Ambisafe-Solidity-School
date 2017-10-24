@@ -13,9 +13,6 @@ contract Lending {
     modifier onlyBy(address _account)
     {
         require(msg.sender == _account);
-        // Do not forget the "_;"! It will
-        // be replaced by the actual function
-        // body when the modifier is used.
         _;
     }
     
@@ -29,11 +26,14 @@ contract Lending {
     }
     
     function borrowMoney(uint amount) public{
+        if (amount == 0) revert();
+        
         if (lendings[msg.sender].exists) {
-            if (lendings[msg.sender].amount + amount > limit) {
+            if (amount > limit - lendings[msg.sender].amount) {
                 revert();
             } else {
                 lendings[msg.sender].amount += amount;
+                BorrowedMoney(msg.sender, amount);
             }
         } else {
             if (amount <= limit) {
@@ -46,7 +46,7 @@ contract Lending {
     }
     
     function returnMoney(uint amount) public onlyBy(owner) {
-         if (!lendings[msg.sender].exists || msg.sender != owner) revert();
+         if (!lendings[msg.sender].exists) revert();
          
          if (amount < lendings[msg.sender].amount) {
              lendings[msg.sender].amount -= amount;
