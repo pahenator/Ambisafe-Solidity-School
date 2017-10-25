@@ -36,7 +36,7 @@ contract Lending {
     }
     
     function returnMoney(address who, uint amount) public onlyBy(owner) {
-         if (lendings[who].amount == 0) revert();
+         if (lendings[who].amount == 0 || amount == 0) revert();
          
          if (amount < lendings[who].amount) {
              lendings[who].amount -= amount;
