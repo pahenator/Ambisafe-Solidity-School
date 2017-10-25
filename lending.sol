@@ -19,7 +19,7 @@ contract Lending {
     event ReturnedPart (address borrower, uint amount);
     event ReturnedAll (address borrower, uint amount);
     event BorrowedMoney (address borrower, uint amount);
-    
+
     function Lending(uint _limit) public {
         owner = msg.sender;
         limit = _limit;
@@ -28,40 +28,27 @@ contract Lending {
     function borrowMoney(uint amount) public{
         if (amount == 0) revert();
         
-        if (lendings[msg.sender].exists) {
-            if (amount > limit - lendings[msg.sender].amount) {
-                revert();
-            } else {
-                lendings[msg.sender].amount += amount;
-                BorrowedMoney(msg.sender, amount);
-            }
+        if (amount > limit - lendings[msg.sender].amount) {
+            revert();
         } else {
-            if (amount <= limit) {
-                lendings[msg.sender] = LendingData({exists: true, person: msg.sender, amount: amount});
-                BorrowedMoney(msg.sender, amount);
-            } else {
-                revert();
-            }
+            lendings[msg.sender].amount += amount;
+            BorrowedMoney(msg.sender, amount);
         }
     }
     
-    function returnMoney(uint amount) public onlyBy(owner) {
-         if (!lendings[msg.sender].exists) revert();
+    function returnMoney(address who, uint amount) public onlyBy(owner) {
+         if (lendings[who].amount == 0) revert();
          
-         if (amount < lendings[msg.sender].amount) {
-             lendings[msg.sender].amount -= amount;
+         if (amount < lendings[who].amount) {
+             lendings[who].amount -= amount;
              ReturnedPart(msg.sender, amount);
          } else {
-             lendings[msg.sender].amount = 0;
+             lendings[who].amount = 0;
              ReturnedAll(msg.sender, amount);
          }
     }
     
-    function checkAmount() public view returns (uint) {
-        if (!lendings[msg.sender].exists) { 
-            return 0;
-        } else {
-            return lendings[msg.sender].amount;
-        }
+    function checkAmount(address who) public view returns (uint) {
+            return lendings[who].amount;
     }
 }
